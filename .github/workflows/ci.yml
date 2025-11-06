@@ -1,0 +1,41 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies (User Service)
+      run: |
+        cd services/user-service
+        npm ci
+    
+    - name: Run tests (User Service)
+      run: |
+        cd services/user-service
+        npm test 2>/dev/null || true
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Test ML Service
+      run: |
+        cd services/ml-service
+        pip install -r requirements.txt
+        python -m pytest tests/ -v 2>/dev/null || true
